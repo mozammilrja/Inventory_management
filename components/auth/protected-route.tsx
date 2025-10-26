@@ -20,7 +20,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // ✅ Redirect unauthenticated users
   useEffect(() => {
     if (initialized && !isLoading && !isAuthenticated) {
-      router.replace("/login"); // Use replace to prevent back button issues
+      router.replace("/"); // Use replace to prevent back button issues
     }
   }, [initialized, isAuthenticated, isLoading, router]);
 

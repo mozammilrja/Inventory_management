@@ -36,7 +36,7 @@ export function Header() {
   const handleLogout = () => {
     dispatch(logout());
     toast.success("Logged out successfully");
-    router.push("/login");
+    router.push("/");
   };
 
   const cycleTheme = () => {
