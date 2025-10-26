@@ -1,31 +1,51 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAppSelector } from '@/lib/store/hooks';
 import { ProductForm } from '@/components/products/product-form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Edit, Calendar, DollarSign, MapPin, Package, User, Wrench, FileText } from 'lucide-react';
-import Link from 'next/link';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  ArrowLeft,
+  Edit,
+  Calendar,
+  DollarSign,
+  MapPin,
+  Package,
+  User,
+  FileText,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { STATUS_COLORS, CONDITION_COLORS, DEPARTMENT_COLORS } from '@/lib/constants';
+import {
+  STATUS_COLORS,
+  CONDITION_COLORS,
+  DEPARTMENT_COLORS,
+} from '@/lib/constants';
 
 export default function AssetDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
-  const productId = params.id as string;
   const { products } = useAppSelector((state) => state.product);
+
+  const productId = params?.id;
   const product = products.find((p) => p.id === productId);
 
-  // Check if view mode is requested via query parameter
   const viewMode = searchParams.get('view') === 'true';
   const [isEditing, setIsEditing] = useState(!viewMode);
 
+  // Handle missing product
   if (!product) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div className="flex items-center gap-4">
           <Link href="/products">
             <Button variant="ghost" size="icon">
@@ -33,38 +53,51 @@ export default function AssetDetailPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Asset Not Found</h1>
-            <p className="text-muted-foreground mt-1">The asset you&apos;re looking for doesn&apos;t exist</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Asset Not Found
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              The asset you&apos;re looking for doesn&apos;t exist.
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  // Format date helper
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: string | Date) => {
     if (!dateString) return 'Not set';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
+  // Edit Mode
   if (isEditing) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => setIsEditing(false)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Edit Asset</h1>
-            <p className="text-muted-foreground mt-1">Update asset information</p>
+            <p className="text-muted-foreground mt-1">
+              Update asset information
+            </p>
           </div>
         </div>
 
         <Card className="max-w-2xl border-slate-200 dark:border-slate-800">
           <CardHeader>
             <CardTitle>Asset Information</CardTitle>
-            <CardDescription>Update the details below to modify the asset</CardDescription>
+            <CardDescription>
+              Update the details below to modify the asset.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ProductForm product={product} onSuccess={() => setIsEditing(false)} />
@@ -74,8 +107,9 @@ export default function AssetDetailPage() {
     );
   }
 
+  // View Mode
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -86,7 +120,9 @@ export default function AssetDetailPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
-            <p className="text-muted-foreground mt-1">Complete asset details and information</p>
+            <p className="text-muted-foreground mt-1">
+              Complete asset details and information
+            </p>
           </div>
         </div>
         <Button onClick={() => setIsEditing(true)}>
@@ -95,7 +131,7 @@ export default function AssetDetailPage() {
         </Button>
       </div>
 
-      {/* Status Overview Card */}
+      {/* Status Overview */}
       <Card className="border-slate-200 dark:border-slate-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -107,13 +143,19 @@ export default function AssetDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-muted-foreground mb-2">Status</p>
-              <Badge variant="outline" className={STATUS_COLORS[product.status as keyof typeof STATUS_COLORS]}>
+              <Badge
+                variant="outline"
+                className={STATUS_COLORS[product.status as keyof typeof STATUS_COLORS] || ''}
+              >
                 {product.status}
               </Badge>
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-2">Condition</p>
-              <Badge variant="outline" className={CONDITION_COLORS[product.condition as keyof typeof CONDITION_COLORS]}>
+              <Badge
+                variant="outline"
+                className={CONDITION_COLORS[product.condition as keyof typeof CONDITION_COLORS] || ''}
+              >
                 {product.condition}
               </Badge>
             </div>
@@ -123,7 +165,9 @@ export default function AssetDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground mb-2">Serial Number</p>
-              <p className="font-mono text-sm font-medium">{product.serialNumber || 'N/A'}</p>
+              <p className="font-mono text-sm font-medium">
+                {product.serialNumber || 'N/A'}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -139,30 +183,19 @@ export default function AssetDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Asset Name</p>
-              <p className="font-medium">{product.name}</p>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-sm text-muted-foreground">Brand</p>
-              <p className="font-medium">{product.brand || 'N/A'}</p>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-sm text-muted-foreground">Model</p>
-              <p className="font-medium">{product.model || 'N/A'}</p>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-sm text-muted-foreground">Asset Tag / SKU</p>
-              <p className="font-medium font-mono">{product.sku || 'N/A'}</p>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-sm text-muted-foreground">Description</p>
-              <p className="font-medium">{product.description || 'No description provided'}</p>
-            </div>
+            {[
+              ['Asset Name', product.name],
+              ['Brand', product.brand || 'N/A'],
+              ['Model', product.productModel || 'N/A'],
+              ['Asset Tag / SKU', product.sku || 'N/A'],
+              ['Description', product.description || 'No description provided'],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="font-medium">{value}</p>
+                <Separator className="my-2" />
+              </div>
+            ))}
           </CardContent>
         </Card>
 
@@ -195,7 +228,10 @@ export default function AssetDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Department</p>
                   {product.department ? (
-                    <Badge variant="outline" className={DEPARTMENT_COLORS[product.department] || ''}>
+                    <Badge
+                      variant="outline"
+                      className={DEPARTMENT_COLORS[product.department] || ''}
+                    >
                       {product.department}
                     </Badge>
                   ) : (
@@ -220,8 +256,12 @@ export default function AssetDetailPage() {
             ) : (
               <div className="text-center py-8">
                 <User className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Not assigned to any employee</p>
-                <p className="text-sm text-muted-foreground mt-1">This asset is currently unassigned</p>
+                <p className="text-muted-foreground">
+                  Not assigned to any employee
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This asset is currently unassigned
+                </p>
               </div>
             )}
           </CardContent>
@@ -236,35 +276,32 @@ export default function AssetDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Purchase Date</p>
-              <p className="font-medium">{formatDate(product.purchaseDate)}</p>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-sm text-muted-foreground">Warranty Expiry</p>
-              <p className="font-medium">{formatDate(product.warrantyExpiry)}</p>
-              {product.warrantyExpiry && new Date(product.warrantyExpiry) < new Date() && (
-                <Badge variant="outline" className="mt-2 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                  Warranty Expired
-                </Badge>
-              )}
-              {product.warrantyExpiry && new Date(product.warrantyExpiry) >= new Date() && (
-                <Badge variant="outline" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                  Under Warranty
-                </Badge>
-              )}
-            </div>
-            <Separator />
-            <div>
-              <p className="text-sm text-muted-foreground">Created At</p>
-              <p className="font-medium">{formatDate(product.createdAt)}</p>
-            </div>
-            <Separator />
-            <div>
-              <p className="text-sm text-muted-foreground">Last Updated</p>
-              <p className="font-medium">{formatDate(product.updatedAt)}</p>
-            </div>
+            {[
+              ['Purchase Date', product.purchaseDate],
+              ['Warranty Expiry', product.warrantyExpiry],
+              ['Created At', product.createdAt],
+              ['Last Updated', product.updatedAt],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="font-medium">{formatDate(value as string)}</p>
+                <Separator className="my-2" />
+              </div>
+            ))}
+            {product.warrantyExpiry && (
+              <Badge
+                variant="outline"
+                className={`mt-2 ${
+                  new Date(product.warrantyExpiry) < new Date()
+                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                    : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                }`}
+              >
+                {new Date(product.warrantyExpiry) < new Date()
+                  ? 'Warranty Expired'
+                  : 'Under Warranty'}
+              </Badge>
+            )}
           </CardContent>
         </Card>
 
@@ -286,7 +323,9 @@ export default function AssetDetailPage() {
               <p className="text-sm text-muted-foreground">Asset Value</p>
               <div className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-green-600" />
-                <p className="font-bold text-2xl">${product.price?.toLocaleString() || '0'}</p>
+                <p className="font-bold text-2xl">
+                  ${product.price?.toLocaleString() || '0'}
+                </p>
               </div>
             </div>
           </CardContent>
