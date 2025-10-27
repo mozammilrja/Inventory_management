@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Package, LayoutDashboard, Box, Tag, Settings, ChevronLeft, ChevronRight, Rocket, X } from 'lucide-react';
+import { Package, LayoutDashboard, Box, Tag, Settings, ChevronLeft, ChevronRight, Rocket, X, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { toggleSidebar, closeSidebar } from '@/lib/store/slices/uiSlice';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Products', href: '/products', icon: Box },
+  { name: 'Add Product', href: '/products/new', icon: PlusCircle },
   { name: 'Categories', href: '/categories', icon: Tag },
   { name: 'Upcoming', href: '/upcoming', icon: Rocket },
   { name: 'Settings', href: '/settings', icon: Settings },

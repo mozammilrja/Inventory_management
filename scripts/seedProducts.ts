@@ -42,7 +42,7 @@ async function seedProducts() {
     ];
     const locations = ["Bangalore", "Hyderabad", "Delhi", "Mumbai", "Pune"];
 
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 20000; i++) {
       const status = faker.helpers.arrayElement(statuses);
       const condition = faker.helpers.arrayElement(conditions);
       const assetType = faker.helpers.arrayElement(assetTypes);

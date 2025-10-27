@@ -182,7 +182,8 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+    <form onSubmit={handleSubmit(onSubmit)}   className="space-y-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
+>
       {/* Asset Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold border-b pb-2">Asset Information</h3>
@@ -205,7 +206,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="assetType">Asset Type *</Label>
             <Select
               value={assetTypeValue}
-              onValueChange={(value) => setValue("assetType", value)}
+              onValueChange={(value:any) => setValue("assetType", value)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="assetType">
@@ -230,7 +231,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="brand">Brand *</Label>
             <Select
               value={brandValue}
-              onValueChange={(value) => setValue("brand", value)}
+              onValueChange={(value:any) => setValue("brand", value)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="brand">
@@ -303,7 +304,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="status">Status *</Label>
             <Select
               value={statusValue}
-              onValueChange={(value) => setValue("status", value as any)}
+              onValueChange={(value:any) => setValue("status", value as any)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="status">
@@ -326,7 +327,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="condition">Condition *</Label>
             <Select
               value={conditionValue}
-              onValueChange={(value) => setValue("condition", value as any)}
+              onValueChange={(value:any) => setValue("condition", value as any)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="condition">
@@ -392,7 +393,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="department">Department</Label>
             <Select
               value={departmentValue}
-              onValueChange={(value) => setValue("department", value)}
+              onValueChange={(value:any) => setValue("department", value)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="department">
