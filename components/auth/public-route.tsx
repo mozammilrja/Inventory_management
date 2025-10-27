@@ -21,14 +21,5 @@ export function PublicRoute({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // ✅ Show loader while checking auth
-  if (isLoading || !shouldRender) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-900 dark:text-slate-50" />
-      </div>
-    );
-  }
-
   return <>{children}</>;
 }

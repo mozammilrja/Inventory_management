@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { registerAsync, clearError } from "@/lib/store/slices/authSlice";
+import {
+  registerAsync,
+  clearError,
+  fetchProfile,
+} from "@/lib/store/slices/authSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Package, Loader2, Eye, EyeOff } from "lucide-react";
+import { Package, Loader2, Eye, EyeOff, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
@@ -26,8 +30,10 @@ export default function RegisterPage() {
   const { isAuthenticated, isLoading, error } = useAppSelector(
     (state) => state.auth
   );
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState(""); // ✅ Added phone state
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [validationError, setValidationError] = useState("");
@@ -55,11 +61,19 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!/^\d{10,15}$/.test(phone)) {
+      setValidationError("Please enter a valid phone number");
+      return;
+    }
+
     try {
-      const token = await dispatch(
-        registerAsync({ email, password, name })
-      ).unwrap();
-      console.log("Token returned from registerAsync:", token);
+      // Step 1: Register user
+      await dispatch(registerAsync({ name, email, password, phone })).unwrap();
+
+      // Step 2: Fetch profile
+      await dispatch(fetchProfile()).unwrap();
+
+      // Step 3: Success
       toast.success("Account created successfully!");
       router.replace("/dashboard");
     } catch (err: any) {
@@ -84,6 +98,7 @@ export default function RegisterPage() {
             Sign up to start managing your inventory
           </CardDescription>
         </CardHeader>
+
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {(error || validationError) && (
@@ -92,6 +107,7 @@ export default function RegisterPage() {
               </Alert>
             )}
 
+            {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input
@@ -105,6 +121,7 @@ export default function RegisterPage() {
               />
             </div>
 
+            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -118,6 +135,25 @@ export default function RegisterPage() {
               />
             </div>
 
+            {/* ✅ Phone Number */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <div className="relative">
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                  required
+                  disabled={isLoading}
+                  className="pl-10"
+                />
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+              </div>
+            </div>
+
+            {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -149,6 +185,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Confirm Password */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
@@ -192,6 +229,7 @@ export default function RegisterPage() {
             </Button>
           </CardContent>
         </form>
+
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}

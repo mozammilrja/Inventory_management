@@ -8,8 +8,8 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Inventory Management System",
-  description: "Production-ready inventory and product management system",
+  title: "AssetPro",
+  description: "Product management system",
 };
 
 export default function RootLayout({

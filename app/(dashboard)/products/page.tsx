@@ -17,15 +17,14 @@ export default function ProductsPage() {
   const { products, isLoading, error } = useAppSelector(
     (state) => state.product
   );
-
   useEffect(() => {
     dispatch(fetchProductsAsync());
   }, [dispatch]);
 
-  // Single-line skeleton per row
-  const RowSkeleton = () => (
-    <div className="space-y-2">
-      {[...Array(5)].map((_, i) => (
+  // Dynamic skeleton based on product length or default (10 rows)
+  const RowSkeleton = ({ count = 10 }: { count?: number }) => (
+    <div className="space-y-3">
+      {[...Array(count)].map((_, i) => (
         <div
           key={i}
           className="h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-full"
@@ -52,7 +51,7 @@ export default function ProductsPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <RowSkeleton />
+            <RowSkeleton count={10} />
           ) : error ? (
             <div className="text-center py-12">
               <p className="text-red-600 dark:text-red-400">Error: {error}</p>

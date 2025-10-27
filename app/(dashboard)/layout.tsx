@@ -1,31 +1,56 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect, useRef, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { fetchProductsAsync } from "@/lib/store/slices/productSlice";
+
+// ✅ Lazy imports
+const Sidebar = dynamic(
+  () => import("@/components/layout/sidebar").then((mod) => mod.Sidebar),
+  {
+    loading: () => (
+      <div className="w-20 bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+        <div className="animate-pulse h-6 w-6 bg-slate-300 dark:bg-slate-700 rounded-full" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const Header = dynamic(
+  () => import("@/components/layout/header").then((mod) => mod.Header),
+  {
+    loading: () => (
+      <div className="h-16 bg-slate-100 dark:bg-slate-800 animate-pulse" />
+    ),
+    ssr: false,
+  }
+);
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const hasFetched = useRef(false);
   const dispatch = useAppDispatch();
 
-  // Fetch products when dashboard is mounted
   useEffect(() => {
-    dispatch(fetchProductsAsync());
+    if (!hasFetched.current) {
+      dispatch(fetchProductsAsync());
+      hasFetched.current = true;
+    }
   }, [dispatch]);
 
   return (
     <ProtectedRoute>
       <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
-        {/* Sidebar */}
+        {/* ✅ Lazy Sidebar */}
         <Sidebar />
 
-        {/* Main Content Area */}
+        {/* ✅ Main Area */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <Header />
           <main className="flex-1 overflow-y-auto p-6">{children}</main>

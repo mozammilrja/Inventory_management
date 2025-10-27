@@ -5,6 +5,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   token: string | null;
+  user: { name: string; email: string } | null;
 }
 
 const initialState: AuthState = {
@@ -12,45 +13,45 @@ const initialState: AuthState = {
   isLoading: false,
   error: null,
   token: null,
+  user: null,
 };
 
+// ✅ Fetch user profile (decode + verify)
 export const fetchProfile = createAsyncThunk("auth/fetchProfile", async () => {
   const token = localStorage.getItem("token");
-  // Optionally: verify token with backend (optional step)
   if (!token) throw new Error("No token found");
-  return token;
+
+  // Decode JWT payload safely
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const decodedPayload = JSON.parse(atob(base64));
+
+  // Verify via backend
+  const res = await fetch("/api/users/profile", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch user profile");
+  }
+
+  const userData = await res.json();
+
+  return {
+    token,
+    user: {
+      id: userData.id,
+      name: userData.name || "User",
+      email: userData.email || decodedPayload.email,
+      phone: userData.phone || "",
+      role: userData.role || "User",
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
+    },
+  };
 });
 
-// Register thunk
-export const registerAsync = createAsyncThunk(
-  "auth/register",
-  async ({
-    name,
-    email,
-    password,
-  }: {
-    name: string;
-    email: string;
-    password: string;
-  }) => {
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    const data = await res.json();
-    console.log("Register API response:", data);
-
-    if (!res.ok) {
-      throw new Error(data.error || "Registration failed");
-    }
-
-    return data.token;
-  }
-);
-
-// Login thunk
+// ✅ Login thunk
 export const loginAsync = createAsyncThunk(
   "auth/login",
   async ({ email, password }: { email: string; password: string }) => {
@@ -61,13 +62,38 @@ export const loginAsync = createAsyncThunk(
     });
 
     const data = await res.json();
-    console.log("Login API response:", data);
+    if (!res.ok) throw new Error(data.error || "Login failed");
 
-    if (!res.ok) {
-      throw new Error(data.error || "Login failed");
-    }
+    localStorage.setItem("token", data.token);
+    return { token: data.token };
+  }
+);
 
-    return data.token;
+// ✅ Register thunk
+export const registerAsync = createAsyncThunk(
+  "auth/register",
+  async ({
+    name,
+    email,
+    password,
+    phone,
+  }: {
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+  }) => {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, phone }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Registration failed");
+
+    localStorage.setItem("token", data.token);
+    return { token: data.token };
   }
 );
 
@@ -81,56 +107,56 @@ const authSlice = createSlice({
     logout(state) {
       state.isAuthenticated = false;
       state.token = null;
-      state.error = null;
-      localStorage.removeItem("token"); // remove token from storage
+      state.user = null;
+      localStorage.removeItem("token");
     },
   },
   extraReducers: (builder) => {
     builder
-      // ✅ Fetch profile
+      // 🔹 Fetch Profile
       .addCase(fetchProfile.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(fetchProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
-        state.token = action.payload;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
       })
       .addCase(fetchProfile.rejected, (state) => {
         state.isLoading = false;
         state.isAuthenticated = false;
         state.token = null;
-      })
-      // Register
-      .addCase(registerAsync.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(registerAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isAuthenticated = true;
-        state.token = action.payload;
-        localStorage.setItem("token", action.payload);
-      })
-      .addCase(registerAsync.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.error.message || "Registration failed";
+        state.user = null;
       })
 
-      // Login
+      // 🔹 Login
       .addCase(loginAsync.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(loginAsync.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.isAuthenticated = true;
-        state.token = action.payload;
-        localStorage.setItem("token", action.payload);
+        // ✅ Do not mark authenticated yet — wait for fetchProfile()
+        state.token = action.payload.token;
       })
       .addCase(loginAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || "Login failed";
+      })
+
+      // 🔹 Register
+      .addCase(registerAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+      })
+      .addCase(registerAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || "Registration failed";
       });
   },
 });

@@ -21,7 +21,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, ArrowUpDown, Edit, Trash2, X, Filter, Eye, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, FileText, ChevronDown } from "lucide-react";
+import {
+  Search,
+  Plus,
+  ArrowUpDown,
+  Edit,
+  Trash2,
+  X,
+  Filter,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Download,
+  FileText,
+  ChevronDown,
+} from "lucide-react";
 import { useAppDispatch } from "@/lib/store/hooks";
 import { deleteProductAsync } from "@/lib/store/slices/productSlice";
 import { toast } from "sonner";
@@ -95,10 +111,16 @@ const exportToCSV = (data: Product[], filename: string = "assets.csv") => {
     product.employeeId || "",
     product.employeeEmail || "",
     product.department || "",
-    product.assignmentDate ? new Date(product.assignmentDate).toLocaleDateString() : "",
+    product.assignmentDate
+      ? new Date(product.assignmentDate).toLocaleDateString()
+      : "",
     product.returnDate ? new Date(product.returnDate).toLocaleDateString() : "",
-    product.purchaseDate ? new Date(product.purchaseDate).toLocaleDateString() : "",
-    product.warrantyExpiry ? new Date(product.warrantyExpiry).toLocaleDateString() : "",
+    product.purchaseDate
+      ? new Date(product.purchaseDate).toLocaleDateString()
+      : "",
+    product.warrantyExpiry
+      ? new Date(product.warrantyExpiry).toLocaleDateString()
+      : "",
     product.location || "",
     product.price || "",
     product.description || "",
@@ -169,10 +191,16 @@ const exportToExcel = (data: Product[], filename: string = "assets.xlsx") => {
     product.employeeId || "",
     product.employeeEmail || "",
     product.department || "",
-    product.assignmentDate ? new Date(product.assignmentDate).toLocaleDateString() : "",
+    product.assignmentDate
+      ? new Date(product.assignmentDate).toLocaleDateString()
+      : "",
     product.returnDate ? new Date(product.returnDate).toLocaleDateString() : "",
-    product.purchaseDate ? new Date(product.purchaseDate).toLocaleDateString() : "",
-    product.warrantyExpiry ? new Date(product.warrantyExpiry).toLocaleDateString() : "",
+    product.purchaseDate
+      ? new Date(product.purchaseDate).toLocaleDateString()
+      : "",
+    product.warrantyExpiry
+      ? new Date(product.warrantyExpiry).toLocaleDateString()
+      : "",
     product.location || "",
     product.price || "",
     product.description || "",
@@ -198,7 +226,6 @@ const exportToExcel = (data: Product[], filename: string = "assets.xlsx") => {
 };
 
 const exportToPDF = (data: Product[], filename: string = "assets.pdf") => {
-  // Create a simple HTML table and print to PDF
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -206,10 +233,10 @@ const exportToPDF = (data: Product[], filename: string = "assets.pdf") => {
       <title>IT Assets Report</title>
       <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
+        h1 { color: #333; text-align: center; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background-color: #f0f0f0; padding: 10px; text-align: left; border: 1px solid #ddd; font-weight: bold; }
-        td { padding: 8px; border: 1px solid #ddd; }
+        td { padding: 8px; border: 1px solid #ddd; text-align: left; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .summary { margin-bottom: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
       </style>
@@ -223,6 +250,7 @@ const exportToPDF = (data: Product[], filename: string = "assets.pdf") => {
       <table>
         <thead>
           <tr>
+            <th>Sr No</th>
             <th>Asset Name</th>
             <th>Type</th>
             <th>Serial Number</th>
@@ -238,8 +266,9 @@ const exportToPDF = (data: Product[], filename: string = "assets.pdf") => {
         <tbody>
           ${data
             .map(
-              (product) => `
+              (product, index) => `
             <tr>
+              <td>${index + 1}</td>
               <td>${product.name || ""}</td>
               <td>${product.assetType || ""}</td>
               <td>${product.serialNumber || ""}</td>
@@ -288,8 +317,12 @@ export function ProductTable({ products }: ProductTableProps) {
       const matchesSearch =
         searchTerm === "" ||
         product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.serialNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.serialNumber
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        product.employeeName
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         product.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.productModel?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -325,7 +358,14 @@ export function ProductTable({ products }: ProductTableProps) {
       const modifier = sortDirection === "asc" ? 1 : -1;
 
       // Handle Date fields
-      if (aVal && bVal && typeof aVal === "object" && typeof bVal === "object" && "getTime" in aVal && "getTime" in bVal) {
+      if (
+        aVal &&
+        bVal &&
+        typeof aVal === "object" &&
+        typeof bVal === "object" &&
+        "getTime" in aVal &&
+        "getTime" in bVal
+      ) {
         return ((aVal as any).getTime() - (bVal as any).getTime()) * modifier;
       }
       if (typeof aVal === "string" && typeof bVal === "string") {
@@ -353,7 +393,7 @@ export function ProductTable({ products }: ProductTableProps) {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAndSortedProducts.slice(
       startIndex,
-      startIndex + itemsPerPage,
+      startIndex + itemsPerPage
     );
   }, [filteredAndSortedProducts, currentPage]);
 
@@ -418,11 +458,7 @@ export function ProductTable({ products }: ProductTableProps) {
             {/* Export Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  title="Export assets"
-                >
+                <Button variant="outline" size="sm" title="Export assets">
                   <Download className="mr-2 h-4 w-4" />
                   Export
                   <ChevronDown className="ml-1 h-4 w-4" />
@@ -434,7 +470,10 @@ export function ProductTable({ products }: ProductTableProps) {
 
                 <DropdownMenuItem
                   onClick={() => {
-                    exportToCSV(filteredAndSortedProducts, `assets-${new Date().toISOString().split('T')[0]}.csv`);
+                    exportToCSV(
+                      filteredAndSortedProducts,
+                      `assets-${new Date().toISOString().split("T")[0]}.csv`
+                    );
                     toast.success("✅ Assets exported to CSV");
                   }}
                 >
@@ -444,7 +483,10 @@ export function ProductTable({ products }: ProductTableProps) {
 
                 <DropdownMenuItem
                   onClick={() => {
-                    exportToExcel(filteredAndSortedProducts, `assets-${new Date().toISOString().split('T')[0]}.xlsx`);
+                    exportToExcel(
+                      filteredAndSortedProducts,
+                      `assets-${new Date().toISOString().split("T")[0]}.xlsx`
+                    );
                     toast.success("✅ Assets exported to Excel");
                   }}
                 >
@@ -454,7 +496,10 @@ export function ProductTable({ products }: ProductTableProps) {
 
                 <DropdownMenuItem
                   onClick={() => {
-                    exportToPDF(filteredAndSortedProducts, `assets-${new Date().toISOString().split('T')[0]}.pdf`);
+                    exportToPDF(
+                      filteredAndSortedProducts,
+                      `assets-${new Date().toISOString().split("T")[0]}.pdf`
+                    );
                     toast.success("✅ Opening PDF preview");
                   }}
                 >
@@ -627,115 +672,124 @@ export function ProductTable({ products }: ProductTableProps) {
             ) : (
               paginatedProducts.map((product) => {
                 // Check if product was created in the last 24 hours
-                const isNew = product.createdAt &&
-                  new Date().getTime() - new Date(product.createdAt).getTime() < 24 * 60 * 60 * 1000;
+                const isNew =
+                  product.createdAt &&
+                  new Date().getTime() - new Date(product.createdAt).getTime() <
+                    24 * 60 * 60 * 1000;
 
                 return (
-                <TableRow key={product.id} className={isNew ? "bg-green-50 dark:bg-green-950/20" : ""}>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{product.name}</span>
-                        {isNew && (
-                          <Badge className="bg-green-600 text-white text-xs">NEW</Badge>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {product.brand} {product.productModel}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{product.assetType}</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-sm">
-                    {product.serialNumber}
-                  </TableCell>
-                  <TableCell>
-                    {product.employeeName ? (
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm">
-                          {product.employeeName}
-                        </span>
+                  <TableRow
+                    key={product.id}
+                    className={isNew ? "bg-green-50 dark:bg-green-950/20" : ""}
+                  >
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{product.name}</span>
+                          {isNew && (
+                            <Badge className="bg-green-600 text-white text-xs">
+                              NEW
+                            </Badge>
+                          )}
+                        </div>
                         <span className="text-xs text-muted-foreground">
-                          {product.employeeId}
+                          {product.brand} {product.productModel}
                         </span>
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">
-                        Unassigned
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {product.department ? (
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{product.assetType}</Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-sm">
+                      {product.serialNumber}
+                    </TableCell>
+                    <TableCell>
+                      {product.employeeName ? (
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">
+                            {product.employeeName}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {product.employeeId}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">
+                          Unassigned
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {product.department ? (
+                        <Badge
+                          variant="outline"
+                          className={
+                            DEPARTMENT_COLORS[product.department] ||
+                            "bg-slate-100 text-slate-800"
+                          }
+                        >
+                          {product.department}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <Badge
                         variant="outline"
                         className={
-                          DEPARTMENT_COLORS[product.department] ||
-                          "bg-slate-100 text-slate-800"
+                          STATUS_COLORS[
+                            product.status as keyof typeof STATUS_COLORS
+                          ]
                         }
                       >
-                        {product.department}
+                        {product.status}
                       </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        STATUS_COLORS[
-                          product.status as keyof typeof STATUS_COLORS
-                        ]
-                      }
-                    >
-                      {product.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        CONDITION_COLORS[
-                          product.condition as keyof typeof CONDITION_COLORS
-                        ]
-                      }
-                    >
-                      {product.condition}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => router.push(`/products/${product.id}?view=true`)}
-                        title="View Details"
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          CONDITION_COLORS[
+                            product.condition as keyof typeof CONDITION_COLORS
+                          ]
+                        }
                       >
-                        <Eye className="h-4 w-4 text-blue-600" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => router.push(`/products/${product.id}`)}
-                        title="Edit Asset"
-                      >
-                        <Edit className="h-4 w-4 text-green-600" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteProductId(product.id || null)}
-                        title="Delete Asset"
-                      >
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
+                        {product.condition}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            router.push(`/products/${product.id}?view=true`)
+                          }
+                          title="View Details"
+                        >
+                          <Eye className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => router.push(`/products/${product.id}`)}
+                          title="Edit Asset"
+                        >
+                          <Edit className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteProductId(product.id || null)}
+                          title="Delete Asset"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
               })
             )}
           </TableBody>
@@ -780,7 +834,7 @@ export function ProductTable({ products }: ProductTableProps) {
             <span className="font-medium text-foreground">
               {Math.min(
                 currentPage * itemsPerPage,
-                filteredAndSortedProducts.length,
+                filteredAndSortedProducts.length
               )}
             </span>{" "}
             of{" "}
