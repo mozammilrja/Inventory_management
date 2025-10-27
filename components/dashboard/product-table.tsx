@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/lib/store/slices/productSlice";
 import {
@@ -73,7 +73,7 @@ interface ProductTableProps {
   products: Product[];
 }
 
-// Export utility functions
+// Export utility functions (memoized)
 const exportToCSV = (data: Product[], filename: string = "assets.csv") => {
   const headers = [
     "Asset Name",
@@ -132,7 +132,6 @@ const exportToCSV = (data: Product[], filename: string = "assets.csv") => {
     ...rows.map((row) =>
       row
         .map((cell) => {
-          // Escape quotes and wrap in quotes if contains comma
           const cellStr = String(cell);
           return cellStr.includes(",") || cellStr.includes('"')
             ? `"${cellStr.replace(/"/g, '""')}"`
@@ -154,7 +153,6 @@ const exportToCSV = (data: Product[], filename: string = "assets.csv") => {
 };
 
 const exportToExcel = (data: Product[], filename: string = "assets.xlsx") => {
-  // Simple Excel export using CSV format (can be opened in Excel)
   const headers = [
     "Asset Name",
     "Type",
@@ -278,7 +276,7 @@ const exportToPDF = (data: Product[], filename: string = "assets.pdf") => {
               <td>${product.employeeName || "Unassigned"}</td>
               <td>${product.department || ""}</td>
               <td>${product.location || ""}</td>
-              <td>$${product.price || 0}</td>
+              <td>${product.price || 0}</td>
             </tr>
           `
             )
@@ -297,6 +295,132 @@ const exportToPDF = (data: Product[], filename: string = "assets.pdf") => {
   }
 };
 
+// Memoized Product Row Component
+const ProductRow = memo(
+  ({
+    product,
+    onView,
+    onEdit,
+    onDelete,
+  }: {
+    product: Product;
+    onView: (id: string) => void;
+    onEdit: (id: string) => void;
+    onDelete: (id: string | null) => void;
+  }) => {
+    const isNew =
+      product.createdAt &&
+      new Date().getTime() - new Date(product.createdAt).getTime() <
+        24 * 60 * 60 * 1000;
+
+    return (
+      <TableRow
+        className={isNew ? "bg-green-50 dark:bg-green-950/20" : ""}
+      >
+        <TableCell>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{product.name}</span>
+              {isNew && (
+                <Badge className="bg-green-600 text-white text-xs">NEW</Badge>
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {product.brand} {product.productModel}
+            </span>
+          </div>
+        </TableCell>
+        <TableCell>
+          <Badge variant="outline">{product.assetType}</Badge>
+        </TableCell>
+        <TableCell className="text-muted-foreground font-mono text-sm">
+          {product.serialNumber}
+        </TableCell>
+        <TableCell>
+          {product.employeeName ? (
+            <div className="flex flex-col">
+              <span className="font-medium text-sm">
+                {product.employeeName}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {product.employeeId}
+              </span>
+            </div>
+          ) : (
+            <span className="text-muted-foreground text-sm">Unassigned</span>
+          )}
+        </TableCell>
+        <TableCell>
+          {product.department ? (
+            <Badge
+              variant="outline"
+              className={
+                DEPARTMENT_COLORS[product.department] ||
+                "bg-slate-100 text-slate-800"
+              }
+            >
+              {product.department}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground text-sm">-</span>
+          )}
+        </TableCell>
+        <TableCell>
+          <Badge
+            variant="outline"
+            className={
+              STATUS_COLORS[product.status as keyof typeof STATUS_COLORS]
+            }
+          >
+            {product.status}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          <Badge
+            variant="outline"
+            className={
+              CONDITION_COLORS[
+                product.condition as keyof typeof CONDITION_COLORS
+              ]
+            }
+          >
+            {product.condition}
+          </Badge>
+        </TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => product.id && onView(product.id)}
+              title="View Details"
+            >
+              <Eye className="h-4 w-4 text-blue-600" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => product.id && onEdit(product.id)}
+              title="Edit Asset"
+            >
+              <Edit className="h-4 w-4 text-green-600" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(product.id || null)}
+              title="Delete Asset"
+            >
+              <Trash2 className="h-4 w-4 text-red-600" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  }
+);
+ProductRow.displayName = "ProductRow";
+
 export function ProductTable({ products }: ProductTableProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -311,9 +435,9 @@ export function ProductTable({ products }: ProductTableProps) {
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  // Memoized filtered and sorted products
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = products.filter((product) => {
-      // Search across multiple fields
       const matchesSearch =
         searchTerm === "" ||
         product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -327,19 +451,15 @@ export function ProductTable({ products }: ProductTableProps) {
         product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.productModel?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Filter by department
       const matchesDepartment =
         departmentFilter === "all" || product.department === departmentFilter;
 
-      // Filter by asset type
       const matchesAssetType =
         assetTypeFilter === "all" || product.assetType === assetTypeFilter;
 
-      // Filter by status
       const matchesStatus =
         statusFilter === "all" || product.status === statusFilter;
 
-      // Filter by condition
       const matchesCondition =
         conditionFilter === "all" || product.condition === conditionFilter;
 
@@ -357,7 +477,6 @@ export function ProductTable({ products }: ProductTableProps) {
       const bVal = b[sortField];
       const modifier = sortDirection === "asc" ? 1 : -1;
 
-      // Handle Date fields
       if (
         aVal &&
         bVal &&
@@ -389,26 +508,30 @@ export function ProductTable({ products }: ProductTableProps) {
     sortDirection,
   ]);
 
+  // Memoized paginated products
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAndSortedProducts.slice(
       startIndex,
       startIndex + itemsPerPage
     );
-  }, [filteredAndSortedProducts, currentPage]);
+  }, [filteredAndSortedProducts, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
 
-  const handleSort = (field: keyof Product) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
+  // Memoized callbacks
+  const handleSort = useCallback((field: keyof Product) => {
+    setSortField((prevField) => {
+      if (prevField === field) {
+        setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      } else {
+        setSortDirection("asc");
+      }
+      return field;
+    });
+  }, []);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!deleteProductId) return;
 
     try {
@@ -418,16 +541,60 @@ export function ProductTable({ products }: ProductTableProps) {
     } catch (err) {
       toast.error("Failed to delete product");
     }
-  };
+  }, [deleteProductId, dispatch]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchTerm("");
     setDepartmentFilter("all");
     setAssetTypeFilter("all");
     setStatusFilter("all");
     setConditionFilter("all");
     setCurrentPage(1);
-  };
+  }, []);
+
+  const handleView = useCallback(
+    (id: string) => {
+      router.push(`/products/${id}?view=true`);
+    },
+    [router]
+  );
+
+  const handleEdit = useCallback(
+    (id: string) => {
+      router.push(`/products/${id}`);
+    },
+    [router]
+  );
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleDepartmentChange = useCallback((value: string) => {
+    setDepartmentFilter(value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleAssetTypeChange = useCallback((value: string) => {
+    setAssetTypeFilter(value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleStatusChange = useCallback((value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleConditionChange = useCallback((value: string) => {
+    setConditionFilter(value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleItemsPerPageChange = useCallback((value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  }, []);
 
   const hasActiveFilters =
     searchTerm !== "" ||
@@ -446,83 +613,103 @@ export function ProductTable({ products }: ProductTableProps) {
             <Input
               placeholder="Search by name, serial, employee, brand..."
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9"
             />
           </div>
 
-          <div className="flex gap-2 w-full sm:w-auto flex-wrap">
-            {/* Export Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" title="Export assets">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export
-                  <ChevronDown className="ml-1 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Export Format</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+     <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-start sm:justify-end gap-3 w-full">
+  {/* Export Dropdown */}
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button
+        variant="outline"
+        size="sm"
+        title="Export assets"
+        className="flex items-center justify-center gap-2 w-full sm:w-auto dark:border-gray-700 dark:hover:bg-gray-800"
+      >
+        <Download className="h-4 w-4" />
+        <span>Export</span>
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
 
-                <DropdownMenuItem
-                  onClick={() => {
-                    exportToCSV(
-                      filteredAndSortedProducts,
-                      `assets-${new Date().toISOString().split("T")[0]}.csv`
-                    );
-                    toast.success("✅ Assets exported to CSV");
-                  }}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  <span>CSV (Spreadsheet)</span>
-                </DropdownMenuItem>
+    <DropdownMenuContent
+      align="end"
+      className="w-48 bg-background text-foreground border border-border shadow-md dark:bg-gray-900 dark:text-gray-100"
+    >
+      <DropdownMenuLabel>Export Format</DropdownMenuLabel>
+      <DropdownMenuSeparator />
 
-                <DropdownMenuItem
-                  onClick={() => {
-                    exportToExcel(
-                      filteredAndSortedProducts,
-                      `assets-${new Date().toISOString().split("T")[0]}.xlsx`
-                    );
-                    toast.success("✅ Assets exported to Excel");
-                  }}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  <span>Excel (Report)</span>
-                </DropdownMenuItem>
+      <DropdownMenuItem
+        onClick={() => {
+          exportToCSV(
+            filteredAndSortedProducts,
+            `assets-${new Date().toISOString().split("T")[0]}.csv`
+          );
+          toast.success("✅ Assets exported to CSV");
+        }}
+        className="cursor-pointer"
+      >
+        <Download className="mr-2 h-4 w-4" />
+        <span>CSV (Spreadsheet)</span>
+      </DropdownMenuItem>
 
-                <DropdownMenuItem
-                  onClick={() => {
-                    exportToPDF(
-                      filteredAndSortedProducts,
-                      `assets-${new Date().toISOString().split("T")[0]}.pdf`
-                    );
-                    toast.success("✅ Opening PDF preview");
-                  }}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  <span>PDF (Print)</span>
-                </DropdownMenuItem>
+      <DropdownMenuItem
+        onClick={() => {
+          exportToExcel(
+            filteredAndSortedProducts,
+            `assets-${new Date().toISOString().split("T")[0]}.xlsx`
+          );
+          toast.success("✅ Assets exported to Excel");
+        }}
+        className="cursor-pointer"
+      >
+        <Download className="mr-2 h-4 w-4" />
+        <span>Excel (Report)</span>
+      </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={() => {
+          exportToPDF(
+            filteredAndSortedProducts,
+            `assets-${new Date().toISOString().split("T")[0]}.pdf`
+          );
+          toast.success("✅ Opening PDF preview");
+        }}
+        className="cursor-pointer"
+      >
+        <FileText className="mr-2 h-4 w-4" />
+        <span>PDF (Print)</span>
+      </DropdownMenuItem>
 
-                <DropdownMenuLabel className="text-xs text-muted-foreground">
-                  {filteredAndSortedProducts.length} assets selected
-                </DropdownMenuLabel>
-              </DropdownMenuContent>
-            </DropdownMenu>
+      <DropdownMenuSeparator />
 
-            <Button
-              onClick={() => router.push("/products/new")}
-              className="w-full sm:w-auto"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Asset
-            </Button>
-          </div>
+      <DropdownMenuLabel className="text-xs text-muted-foreground">
+        {filteredAndSortedProducts.length} assets selected
+      </DropdownMenuLabel>
+    </DropdownMenuContent>
+  </DropdownMenu>
+
+{/* Add Asset Button */}
+<Button
+  onClick={() => router.push("/products/new")}
+  size="sm"
+  className="
+    flex items-center justify-center gap-2 
+    w-full sm:w-auto 
+    bg-blue-600 text-white 
+    hover:bg-blue-700 
+    dark:bg-blue-500 dark:hover:bg-blue-600
+    transition-colors duration-200
+  "
+>
+  <Plus className="h-4 w-4" />
+  <span>Add Asset</span>
+</Button>
+
+</div>
+
         </div>
 
         {/* Filter Row */}
@@ -532,13 +719,7 @@ export function ProductTable({ products }: ProductTableProps) {
             <span className="font-medium">Filters:</span>
           </div>
 
-          <Select
-            value={departmentFilter}
-            onValueChange={(value) => {
-              setDepartmentFilter(value);
-              setCurrentPage(1);
-            }}
-          >
+          <Select value={departmentFilter} onValueChange={handleDepartmentChange}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Department" />
             </SelectTrigger>
@@ -552,13 +733,7 @@ export function ProductTable({ products }: ProductTableProps) {
             </SelectContent>
           </Select>
 
-          <Select
-            value={assetTypeFilter}
-            onValueChange={(value) => {
-              setAssetTypeFilter(value);
-              setCurrentPage(1);
-            }}
-          >
+          <Select value={assetTypeFilter} onValueChange={handleAssetTypeChange}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Asset Type" />
             </SelectTrigger>
@@ -572,13 +747,7 @@ export function ProductTable({ products }: ProductTableProps) {
             </SelectContent>
           </Select>
 
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value);
-              setCurrentPage(1);
-            }}
-          >
+          <Select value={statusFilter} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -592,13 +761,7 @@ export function ProductTable({ products }: ProductTableProps) {
             </SelectContent>
           </Select>
 
-          <Select
-            value={conditionFilter}
-            onValueChange={(value) => {
-              setConditionFilter(value);
-              setCurrentPage(1);
-            }}
-          >
+          <Select value={conditionFilter} onValueChange={handleConditionChange}>
             <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder="Condition" />
             </SelectTrigger>
@@ -670,309 +833,212 @@ export function ProductTable({ products }: ProductTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedProducts.map((product) => {
-                // Check if product was created in the last 24 hours
-                const isNew =
-                  product.createdAt &&
-                  new Date().getTime() - new Date(product.createdAt).getTime() <
-                    24 * 60 * 60 * 1000;
-
-                return (
-                  <TableRow
-                    key={product.id}
-                    className={isNew ? "bg-green-50 dark:bg-green-950/20" : ""}
-                  >
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{product.name}</span>
-                          {isNew && (
-                            <Badge className="bg-green-600 text-white text-xs">
-                              NEW
-                            </Badge>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {product.brand} {product.productModel}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{product.assetType}</Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-sm">
-                      {product.serialNumber}
-                    </TableCell>
-                    <TableCell>
-                      {product.employeeName ? (
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm">
-                            {product.employeeName}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {product.employeeId}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">
-                          Unassigned
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {product.department ? (
-                        <Badge
-                          variant="outline"
-                          className={
-                            DEPARTMENT_COLORS[product.department] ||
-                            "bg-slate-100 text-slate-800"
-                          }
-                        >
-                          {product.department}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          STATUS_COLORS[
-                            product.status as keyof typeof STATUS_COLORS
-                          ]
-                        }
-                      >
-                        {product.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          CONDITION_COLORS[
-                            product.condition as keyof typeof CONDITION_COLORS
-                          ]
-                        }
-                      >
-                        {product.condition}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            router.push(`/products/${product.id}?view=true`)
-                          }
-                          title="View Details"
-                        >
-                          <Eye className="h-4 w-4 text-blue-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => router.push(`/products/${product.id}`)}
-                          title="Edit Asset"
-                        >
-                          <Edit className="h-4 w-4 text-green-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteProductId(product.id || null)}
-                          title="Delete Asset"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+              paginatedProducts.map((product) => (
+                <ProductRow
+                  key={product.id}
+                  product={product}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  onDelete={setDeleteProductId}
+                />
+              ))
             )}
           </TableBody>
         </Table>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t">
-        {/* Left side: Items per page and info */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Show</span>
-            <Select
-              value={itemsPerPage.toString()}
-              onValueChange={(value) => {
-                setItemsPerPage(Number(value));
-                setCurrentPage(1); // Reset to first page when changing items per page
-              }}
-            >
-              <SelectTrigger className="w-[70px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
-              </SelectContent>
-            </Select>
-            <span className="text-sm text-muted-foreground">per page</span>
-          </div>
+     {/* Pagination Controls */}
+<div className="flex flex-col lg:flex-row flex-wrap items-center justify-between gap-4 pt-4 border-t w-full">
+  {/* Left side: Items per page and info */}
+  <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-muted-foreground">Show</span>
+      <Select
+        value={itemsPerPage.toString()}
+        onValueChange={handleItemsPerPageChange}
+      >
+        <SelectTrigger className="w-[70px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="5">5</SelectItem>
+          <SelectItem value="10">10</SelectItem>
+          <SelectItem value="20">20</SelectItem>
+          <SelectItem value="50">50</SelectItem>
+          <SelectItem value="100">100</SelectItem>
+        </SelectContent>
+      </Select>
+      <span className="text-sm text-muted-foreground">per page</span>
+    </div>
 
-          <p className="text-sm text-muted-foreground">
-            Showing{" "}
-            <span className="font-medium text-foreground">
-              {filteredAndSortedProducts.length === 0
-                ? 0
-                : (currentPage - 1) * itemsPerPage + 1}
-            </span>{" "}
-            to{" "}
-            <span className="font-medium text-foreground">
-              {Math.min(
-                currentPage * itemsPerPage,
-                filteredAndSortedProducts.length
-              )}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium text-foreground">
-              {filteredAndSortedProducts.length}
-            </span>{" "}
-            assets
-          </p>
-        </div>
+    <p className="text-sm text-muted-foreground sm:ml-2">
+      Showing{" "}
+      <span className="font-medium text-foreground">
+        {filteredAndSortedProducts.length === 0
+          ? 0
+          : (currentPage - 1) * itemsPerPage + 1}
+      </span>{" "}
+      to{" "}
+      <span className="font-medium text-foreground">
+        {Math.min(
+          currentPage * itemsPerPage,
+          filteredAndSortedProducts.length
+        )}
+      </span>{" "}
+      of{" "}
+      <span className="font-medium text-foreground">
+        {filteredAndSortedProducts.length}
+      </span>{" "}
+      assets
+    </p>
+  </div>
 
-        {/* Right side: Page navigation */}
-        {totalPages > 1 && (
-          <div className="flex items-center gap-2">
-            {/* First page button */}
+  {/* Right side: Page navigation */}
+  {totalPages > 1 && (
+    <div className="flex flex-wrap justify-center sm:justify-end items-center gap-2 w-full sm:w-auto">
+      {/* First page */}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setCurrentPage(1)}
+        disabled={currentPage === 1}
+        title="First page"
+      >
+        <ChevronsLeft className="h-4 w-4" />
+      </Button>
+
+      {/* Prev */}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+        disabled={currentPage === 1}
+        title="Previous page"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
+      {/* Page numbers */}
+      <div className="flex flex-wrap items-center justify-center gap-1">
+        {currentPage > 3 && (
+          <>
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
               onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-              title="First page"
+              className="w-9"
             >
-              <ChevronsLeft className="h-4 w-4" />
+              1
             </Button>
+            {currentPage > 4 && (
+              <span className="px-1 text-muted-foreground">...</span>
+            )}
+          </>
+        )}
 
-            {/* Previous page button */}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .filter((page) => Math.abs(page - currentPage) <= 2)
+          .map((page) => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentPage(page)}
+              className="w-9"
+            >
+              {page}
+            </Button>
+          ))}
+
+        {currentPage < totalPages - 2 && (
+          <>
+            {currentPage < totalPages - 3 && (
+              <span className="px-1 text-muted-foreground">...</span>
+            )}
             <Button
               variant="outline"
-              size="icon"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              title="Previous page"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            {/* Page numbers */}
-            <div className="flex items-center gap-1">
-              {/* Show first page if not in range */}
-              {currentPage > 3 && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(1)}
-                    className="w-9"
-                  >
-                    1
-                  </Button>
-                  {currentPage > 4 && (
-                    <span className="px-1 text-muted-foreground">...</span>
-                  )}
-                </>
-              )}
-
-              {/* Show pages around current page */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((page) => {
-                  // Show current page and 2 pages before and after
-                  return Math.abs(page - currentPage) <= 2;
-                })
-                .map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className="w-9"
-                  >
-                    {page}
-                  </Button>
-                ))}
-
-              {/* Show last page if not in range */}
-              {currentPage < totalPages - 2 && (
-                <>
-                  {currentPage < totalPages - 3 && (
-                    <span className="px-1 text-muted-foreground">...</span>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(totalPages)}
-                    className="w-9"
-                  >
-                    {totalPages}
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {/* Next page button */}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              title="Next page"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-
-            {/* Last page button */}
-            <Button
-              variant="outline"
-              size="icon"
+              size="sm"
               onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-              title="Last page"
+              className="w-9"
             >
-              <ChevronsRight className="h-4 w-4" />
+              {totalPages}
             </Button>
-          </div>
+          </>
         )}
       </div>
 
-      <AlertDialog
-        open={!!deleteProductId}
-        onOpenChange={() => setDeleteProductId(null)}
+      {/* Next */}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+        disabled={currentPage === totalPages}
+        title="Next page"
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              product from your inventory.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+
+      {/* Last */}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setCurrentPage(totalPages)}
+        disabled={currentPage === totalPages}
+        title="Last page"
+      >
+        <ChevronsRight className="h-4 w-4" />
+      </Button>
+    </div>
+  )}
+</div>
+
+  <AlertDialog
+  open={!!deleteProductId}
+  onOpenChange={() => setDeleteProductId(null)}
+>
+  <AlertDialogContent
+    className="
+      max-w-[95%] sm:max-w-md md:max-w-lg 
+      w-full rounded-xl p-6
+      bg-background text-foreground
+      dark:bg-gray-900 dark:text-gray-100
+    "
+  >
+    <AlertDialogHeader className="space-y-2 text-center sm:text-left">
+      <AlertDialogTitle className="text-lg sm:text-xl font-semibold">
+        Are you sure?
+      </AlertDialogTitle>
+      <AlertDialogDescription className="text-sm text-muted-foreground">
+        This action cannot be undone. It will permanently delete this product from
+        your inventory.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+    <AlertDialogFooter className="flex flex-col-reverse sm:flex-row gap-3 mt-6">
+      <AlertDialogCancel
+        className="
+          w-full sm:w-auto 
+          border border-gray-300 text-gray-700 hover:bg-gray-100 
+          dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800
+        "
+      >
+        Cancel
+      </AlertDialogCancel>
+
+      <AlertDialogAction
+        onClick={handleDelete}
+        className="
+          w-full sm:w-auto 
+          bg-red-600 hover:bg-red-700 
+          text-white font-medium
+        "
+      >
+        Delete
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
     </div>
   );
 }

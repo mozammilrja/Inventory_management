@@ -1,1 +1,1 @@
-# Inventory_management
+# assets_management

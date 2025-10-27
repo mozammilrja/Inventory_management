@@ -95,7 +95,7 @@ export default function RegisterPage() {
             Create Account
           </CardTitle>
           <CardDescription className="text-center">
-            Sign up to start managing your inventory
+            Sign up to start managing your assets
           </CardDescription>
         </CardHeader>
 

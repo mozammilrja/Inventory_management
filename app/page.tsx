@@ -175,7 +175,7 @@ export default function Home() {
           </h1>
 
           <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
-            Streamline your inventory management with our powerful, intuitive platform.
+            Streamline your assets management with our powerful, intuitive platform.
             Track, manage, and optimize your assets in real-time.
           </p>
 
@@ -352,7 +352,7 @@ export default function Home() {
             </div>
             <h3 className="text-xl font-semibold mb-3">Start Managing</h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Track, analyze, and optimize your asset inventory.
+              Track, analyze, and optimize your asset.
             </p>
           </div>
         </div>
@@ -720,7 +720,7 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-slate-600 dark:text-slate-400 mb-4">
-                "AssetPro transformed how we manage our IT inventory. The interface is intuitive and the reporting features are outstanding!"
+                "AssetPro transformed how we manage our IT assets. The interface is intuitive and the reporting features are outstanding!"
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
@@ -1061,7 +1061,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-slate-600 dark:text-slate-400 mb-4 max-w-sm">
-                The modern solution for inventory management. Track, manage, and optimize your assets with ease.
+                The modern solution for assets management. Track, manage, and optimize your assets with ease.
               </p>
               <div className="flex gap-3">
                 <Button size="sm" variant="outline" className="rounded-full w-10 h-10 p-0">

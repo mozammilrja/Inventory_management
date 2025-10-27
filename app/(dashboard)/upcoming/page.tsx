@@ -15,14 +15,14 @@ export default function UpcomingPage() {
     },
     {
       title: "Multi-warehouse Support",
-      description: "Manage inventory across multiple warehouse locations with ease.",
+      description: "Manage assets across multiple warehouse locations with ease.",
       status: "Planned",
       icon: Rocket,
       color: "bg-purple-500",
     },
     {
       title: "Barcode Scanner Integration",
-      description: "Scan barcodes to quickly add, update, or track products in your inventory.",
+      description: "Scan barcodes to quickly add, update, or track products in your assets.",
       status: "In Development",
       icon: CheckCircle2,
       color: "bg-green-500",
@@ -43,7 +43,7 @@ export default function UpcomingPage() {
     },
     {
       title: "Export & Reporting",
-      description: "Export inventory data to CSV, Excel, and PDF formats with custom reports.",
+      description: "Export assets data to CSV, Excel, and PDF formats with custom reports.",
       status: "In Development",
       icon: Sparkles,
       color: "bg-indigo-500",
@@ -72,7 +72,7 @@ export default function UpcomingPage() {
             We're Building Something Amazing
           </h2>
           <p className="text-slate-600 dark:text-slate-400 max-w-2xl">
-            Our team is working hard to bring you powerful new features that will make inventory management even easier and more efficient.
+            Our team is working hard to bring you powerful new features that will make assets management even easier and more efficient.
           </p>
         </CardContent>
       </Card>

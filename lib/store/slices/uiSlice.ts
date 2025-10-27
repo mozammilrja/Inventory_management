@@ -1,3 +1,4 @@
+// lib/store/slices/uiSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UiState {
@@ -6,7 +7,7 @@ interface UiState {
 }
 
 const initialState: UiState = {
-  sidebarOpen: true,
+  sidebarOpen: false, // Start closed on mobile by default
   theme: 'light',
 };
 
@@ -20,6 +21,12 @@ const uiSlice = createSlice({
     setSidebarOpen: (state, action: PayloadAction<boolean>) => {
       state.sidebarOpen = action.payload;
     },
+    closeSidebar: (state) => {
+      state.sidebarOpen = false;
+    },
+    openSidebar: (state) => {
+      state.sidebarOpen = true;
+    },
     toggleTheme: (state) => {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
     },
@@ -29,5 +36,13 @@ const uiSlice = createSlice({
   },
 });
 
-export const { toggleSidebar, setSidebarOpen, toggleTheme, setTheme } = uiSlice.actions;
+export const { 
+  toggleSidebar, 
+  setSidebarOpen, 
+  closeSidebar, 
+  openSidebar, 
+  toggleTheme, 
+  setTheme 
+} = uiSlice.actions;
+
 export default uiSlice.reducer;

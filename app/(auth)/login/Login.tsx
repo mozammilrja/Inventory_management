@@ -72,7 +72,7 @@ export default function LoginPageContent() {
             Welcome Back
           </CardTitle>
           <CardDescription className="text-center">
-            Sign in to your inventory management account
+            Sign in to your assets management account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

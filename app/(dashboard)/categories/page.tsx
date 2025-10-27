@@ -309,198 +309,263 @@ export default function CategoriesPage() {
   // -------------------------
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
-        <p className="text-muted-foreground mt-1">
-          Overview of product categories and their statistics
-        </p>
-      </div>
+{/* Page Header */}
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 sm:gap-4">
+  <div className="text-center sm:text-left">
+    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+      Categories
+    </h1>
+    <p className="text-sm sm:text-base text-muted-foreground mt-1">
+      Overview of product categories and their statistics
+    </p>
+  </div>
+</div>
 
-      {/* Search and Export */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search categories..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
+{/* Search + Export */}
+{!isLoading && (
+  <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between w-full mt-4">
+    {/* Search Bar */}
+    <div className="relative flex-1 w-full max-w-full md:max-w-md">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Input
+        placeholder="Search categories..."
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(1);
+        }}
+        className="pl-9 w-full"
+      />
+    </div>
+
+    {/* Export Dropdown */}
+    <div className="flex flex-wrap gap-2 justify-end w-full md:w-auto">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Export categories"
+            className="flex items-center gap-2 w-full md:w-auto dark:border-gray-700 dark:hover:bg-gray-800"
+          >
+            <Download className="h-4 w-4" />
+            Export
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-48 bg-background text-foreground border border-border shadow-md dark:bg-gray-900 dark:text-gray-100"
+        >
+          <DropdownMenuLabel>Export Format</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            onClick={() => {
+              exportCategoriesCSV(
+                categoryStats,
+                `categories-${new Date().toISOString().split("T")[0]}.csv`
+              );
+              toast.success("✅ Categories exported to CSV");
             }}
-            className="pl-9"
-          />
-        </div>
+            className="cursor-pointer"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            <span>CSV (Spreadsheet)</span>
+          </DropdownMenuItem>
 
-        <div className="flex gap-2 w-full sm:w-auto flex-wrap">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" title="Export categories">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Export Format</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => {
+              exportCategoriesExcel(
+                categoryStats,
+                `categories-${new Date().toISOString().split("T")[0]}.xlsx`
+              );
+              toast.success("✅ Categories exported to Excel");
+            }}
+            className="cursor-pointer"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            <span>Excel (Report)</span>
+          </DropdownMenuItem>
 
-              <DropdownMenuItem
-                onClick={() => {
-                  exportCategoriesCSV(
-                    categoryStats,
-                    `categories-${new Date().toISOString().split("T")[0]}.csv`
-                  );
-                  toast.success("✅ Categories exported to CSV");
-                }}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                <span>CSV (Spreadsheet)</span>
-              </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              exportCategoriesPDF(
+                categoryStats,
+                `categories-${new Date().toISOString().split("T")[0]}.pdf`
+              );
+              toast.success("✅ Opening PDF preview");
+            }}
+            className="cursor-pointer"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            <span>PDF (Print)</span>
+          </DropdownMenuItem>
 
-              <DropdownMenuItem
-                onClick={() => {
-                  exportCategoriesExcel(
-                    categoryStats,
-                    `categories-${new Date().toISOString().split("T")[0]}.xlsx`
-                  );
-                  toast.success("✅ Categories exported to Excel");
-                }}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                <span>Excel (Report)</span>
-              </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-xs text-muted-foreground">
+            {categoryStats.length} categories
+          </DropdownMenuLabel>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  </div>
+)}
 
-              <DropdownMenuItem
-                onClick={() => {
-                  exportCategoriesPDF(
-                    categoryStats,
-                    `categories-${new Date().toISOString().split("T")[0]}.pdf`
-                  );
-                  toast.success("✅ Opening PDF preview");
-                }}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                <span>PDF (Print)</span>
-              </DropdownMenuItem>
+{/* Sort Controls */}
+{!isLoading && (
+  <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 mt-4">
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <Filter className="h-4 w-4" />
+      <span className="font-medium">Sort by:</span>
+    </div>
 
-              <DropdownMenuSeparator />
+    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+      <Select
+        value={sortBy}
+        onValueChange={(value: any) => {
+          setSortBy(value);
+          setCurrentPage(1);
+        }}
+      >
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="count">Product Count</SelectItem>
+          <SelectItem value="value">Total Value</SelectItem>
+          <SelectItem value="name">Category Name</SelectItem>
+        </SelectContent>
+      </Select>
 
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                {categoryStats.length} categories
-              </DropdownMenuLabel>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() =>
+          setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+        }
+        className="w-full sm:w-auto dark:border-gray-700 dark:hover:bg-gray-800"
+      >
+        {sortDirection === "asc" ? "↑ Ascending" : "↓ Descending"}
+      </Button>
+    </div>
+  </div>
+)}
 
-      {/* Sort Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-wrap">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Filter className="h-4 w-4" />
-          <span className="font-medium">Sort by:</span>
-        </div>
 
-        <Select
-          value={sortBy}
-          onValueChange={(value: any) => {
-            setSortBy(value);
-            setCurrentPage(1);
-          }}
-        >
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="count">Product Count</SelectItem>
-            <SelectItem value="value">Total Value</SelectItem>
-            <SelectItem value="name">Category Name</SelectItem>
-          </SelectContent>
-        </Select>
+{/* Cards Grid */}
+{isLoading ? (
+  // Show shimmer on values (not replacing cards)
+  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {[...Array(6)].map((_, i) => (
+      <Card
+        key={i}
+        className="border-slate-200 dark:border-slate-800 bg-muted/30 animate-pulse"
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <Tag className="h-5 w-5 text-slate-500" />
+              </div>
+              <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+            </div>
+            <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Package className="h-4 w-4" />
+              <span>Products</span>
+            </div>
+            <div className="h-4 w-8 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-          }
-        >
-          {sortDirection === "asc" ? "↑ Ascending" : "↓ Descending"}
-        </Button>
-      </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4" />
+              <span>Total Stock</span>
+            </div>
+            <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
 
-      {/* Cards Grid */}
-      {isLoading ? (
-        <CardSkeleton />
-      ) : categoryStats.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {paginatedCategories.map((category) => (
-            <Card
-              key={category.category}
-              className="border-slate-200 dark:border-slate-800"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                      <Tag className="h-5 w-5 text-slate-700 dark:text-slate-300" />
-                    </div>
-                    <CardTitle className="text-lg">
-                      {category.category}
-                    </CardTitle>
-                  </div>
-                  {category.lowStock > 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      {category.lowStock} Low
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Package className="h-4 w-4" />
-                    <span>Products</span>
-                  </div>
-                  <span className="font-semibold">{category.count}</span>
-                </div>
+          <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+            <span className="text-sm text-muted-foreground">Total Value</span>
+            <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+) : categoryStats.length > 0 ? (
+  // Normal data view (same as your current cards)
+  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {paginatedCategories.map((category) => (
+      <Card
+        key={category.category}
+        className="border-slate-200 dark:border-slate-800"
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <Tag className="h-5 w-5 text-slate-700 dark:text-slate-300" />
+              </div>
+              <CardTitle className="text-lg">{category.category}</CardTitle>
+            </div>
+            {category.lowStock > 0 && (
+              <Badge variant="destructive" className="text-xs">
+                {category.lowStock} Low
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Package className="h-4 w-4" />
+              <span>Products</span>
+            </div>
+            <span className="font-semibold">{category.count}</span>
+          </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Total Stock</span>
-                  </div>
-                  <span className="font-semibold">
-                    {category.totalStock.toLocaleString()}
-                  </span>
-                </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4" />
+              <span>Total Stock</span>
+            </div>
+            <span className="font-semibold">
+              {category.totalStock.toLocaleString()}
+            </span>
+          </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
-                  <span className="text-sm text-muted-foreground">
-                    Total Value
-                  </span>
-                  <span className="font-bold text-lg">
-                    $
-                    {category.totalValue.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card className="border-slate-200 dark:border-slate-800">
-          <CardContent className="py-12 text-center">
-            <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <CardTitle className="mb-2">No categories found</CardTitle>
-            <CardDescription>
-              Add some products to see category statistics
-            </CardDescription>
-          </CardContent>
-        </Card>
-      )}
+          <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+            <span className="text-sm text-muted-foreground">Total Value</span>
+            <span className="font-bold text-lg">
+              $
+              {category.totalValue.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+) : (
+  <Card className="border-slate-200 dark:border-slate-800">
+    <CardContent className="py-12 text-center">
+      <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+      <CardTitle className="mb-2">No categories found</CardTitle>
+      <CardDescription>
+        Add some products to see category statistics
+      </CardDescription>
+    </CardContent>
+  </Card>
+)}
+
 
       {/* Pagination */}
       {categoryStats.length > 0 && (

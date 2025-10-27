@@ -35,20 +35,26 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">IT Assets</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage hardware assets assigned to employees
-        </p>
-      </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 sm:gap-4">
+  <div className="text-center sm:text-left">
+    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+      IT Assets
+    </h1>
+    <p className="text-sm sm:text-base text-muted-foreground mt-1">
+      Manage hardware assets assigned to employees
+    </p>
+  </div>
+</div>
 
       <Card className="border-slate-200 dark:border-slate-800">
-        <CardHeader>
-          <CardTitle>All IT Assets</CardTitle>
-          <CardDescription>
-            View, search, filter, and manage your IT hardware inventory
-          </CardDescription>
-        </CardHeader>
+ <CardHeader className="space-y-1 text-center sm:text-left">
+    <CardTitle className="text-xl sm:text-2xl font-semibold text-foreground">
+      All IT Assets
+    </CardTitle>
+    <CardDescription className="text-sm sm:text-base text-muted-foreground">
+      View, search, filter, and manage your IT hardware assets
+    </CardDescription>
+  </CardHeader>
         <CardContent>
           {isLoading ? (
             <RowSkeleton count={10} />
