@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config({ path: ".env.local" }); // ✅ Load environment variables first
+dotenv.config({ path: ".env.local" });
 
 import mongoose from "mongoose";
 import { faker } from "@faker-js/faker";
@@ -42,7 +42,7 @@ async function seedProducts() {
     ];
     const locations = ["Bangalore", "Hyderabad", "Delhi", "Mumbai", "Pune"];
 
-    for (let i = 0; i < 20000; i++) {
+    for (let i = 0; i < 2000; i++) {
       const status = faker.helpers.arrayElement(statuses);
       const condition = faker.helpers.arrayElement(conditions);
       const assetType = faker.helpers.arrayElement(assetTypes);
@@ -52,15 +52,15 @@ async function seedProducts() {
       const product: Partial<IProduct> = {
         name: `${faker.commerce.productAdjective()} ${assetType}`,
         assetType,
-        serialNumber: faker.string.alphanumeric(10),
+        serialNumber: faker.string.alphanumeric(10).toUpperCase(),
         brand: faker.company.name(),
         productModel: faker.commerce.productName(),
         sku: faker.string.uuid(),
         status,
         condition,
-        price: parseFloat(faker.commerce.price({ min: 5000, max: 200000 })),
+        price: Number(faker.commerce.price({ min: 500, max: 2000 })),
         description: faker.commerce.productDescription(),
-        image: faker.image.urlLoremFlickr({ category: "technology" }),
+        image: faker.image.url(), // ✅ Faster & reliable
         notes: faker.lorem.sentence(),
         category: assetType,
         quantity: 1,
@@ -69,10 +69,11 @@ async function seedProducts() {
         location,
         purchaseDate: faker.date.past({ years: 3 }),
         warrantyExpiry: faker.date.future({ years: 2 }),
+
         ...(status === "Assigned"
           ? {
               employeeName: faker.person.fullName(),
-              employeeId: faker.string.alphanumeric(6),
+              employeeId: faker.string.alphanumeric(6).toUpperCase(),
               employeeEmail: faker.internet.email(),
               department,
               assignmentDate: faker.date.past({ years: 1 }),
@@ -81,7 +82,8 @@ async function seedProducts() {
           : {}),
       };
 
-      products.push(product);
+      // ✅ Typescript safe push (avoid type error)
+      products.push(product as IProduct);
     }
 
     console.log(`🚀 Seeding ${products.length} products...`);

@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     // In production, you would send an email here with the reset link
     // For now, we'll just log it (in development, you can see it in console)
     const resetUrl = `${
-      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"
     }/reset-password?token=${resetToken}`;
 
     console.log("=".repeat(50));

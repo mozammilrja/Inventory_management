@@ -36,6 +36,9 @@ export function Header() {
   const { token, user } = useAppSelector((state: any) => state.auth);
   const { theme, setTheme } = useTheme();
 
+  const { resolvedTheme } = useTheme();
+  console.log("Theme:", theme, "Resolved:", resolvedTheme);
+
   // Fetch profile if logged in
   useEffect(() => {
     if (token && !user) dispatch(fetchProfile());
@@ -68,7 +71,11 @@ export function Header() {
 
   // Determine page title based on route
   const pageTitle = useMemo(() => {
-  return ` ${NAV_TITLES[pathname] ? `${NAV_TITLES[pathname]} Assets` : "Assets Management"}`;
+    return ` ${
+      NAV_TITLES[pathname]
+        ? `${NAV_TITLES[pathname]} Assets`
+        : "Assets Management"
+    }`;
   }, [pathname]);
 
   const userName = user?.name || "Guest";

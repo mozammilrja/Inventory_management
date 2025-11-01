@@ -1,5 +1,8 @@
 import mongoose, { Schema, Document, models } from "mongoose";
 
+/**
+ * 🧩 Interface for Product Document (Mongoose Model)
+ */
 export interface IProduct extends Document {
   // Asset Information
   name: string;
@@ -42,14 +45,23 @@ export interface IProduct extends Document {
   updatedAt: Date;
 }
 
+/**
+ * 🧠 Plain Product type (for .lean() or JSON-safe data)
+ * Removes Mongoose Document methods and internal fields
+ */
+export type ProductPlain = Omit<IProduct, keyof Document>;
+
+/**
+ * 🏗️ Product Schema Definition
+ */
 const ProductSchema = new Schema<IProduct>(
   {
     // Asset Information
     name: { type: String, required: true, minlength: 3 },
-    assetType: { type: String, default: "Other" }, // Optional for backward compatibility
-    serialNumber: { type: String, sparse: true }, // Sparse index allows null/undefined
-    brand: { type: String, default: "Unknown" }, // Optional for backward compatibility
-    productModel: { type: String, default: "N/A" }, // Optional for backward compatibility
+    assetType: { type: String, default: "Other" },
+    serialNumber: { type: String, sparse: true },
+    brand: { type: String, default: "Dell" },
+    productModel: { type: String, default: "N/A" },
     sku: { type: String, required: true },
 
     // Status & Condition
@@ -57,13 +69,13 @@ const ProductSchema = new Schema<IProduct>(
       type: String,
       enum: ["Available", "Assigned", "Under Repair", "Retired"],
       default: "Available",
-      required: true
+      required: true,
     },
     condition: {
       type: String,
       enum: ["New", "Good", "Fair", "Poor"],
       default: "Good",
-      required: true
+      required: true,
     },
 
     // Employee Assignment
@@ -94,6 +106,9 @@ const ProductSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
+/**
+ * ✅ Export the compiled model (or reuse existing one)
+ */
 const Product =
   models.Product || mongoose.model<IProduct>("Product", ProductSchema);
 

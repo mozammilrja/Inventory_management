@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import mongoose from "mongoose";
 
+// 🧩 Get single product by ID
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
@@ -11,7 +12,10 @@ export async function GET(
     await connectDB();
 
     if (!mongoose.Types.ObjectId.isValid(params.id)) {
-      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid product ID" },
+        { status: 400 }
+      );
     }
 
     const product = await Product.findById(params.id);
@@ -56,6 +60,7 @@ export async function GET(
   }
 }
 
+// 🧩 Update product by ID
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
@@ -64,7 +69,10 @@ export async function PUT(
     await connectDB();
 
     if (!mongoose.Types.ObjectId.isValid(params.id)) {
-      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid product ID" },
+        { status: 400 }
+      );
     }
 
     const body = await req.json();
@@ -76,7 +84,7 @@ export async function PUT(
         assetType: body.assetType,
         serialNumber: body.serialNumber,
         brand: body.brand,
-        productModel: body.productModel,
+        model: body.model, // ✅ fixed key name (was productModel before)
         sku: body.sku,
         status: body.status,
         condition: body.condition,
@@ -93,7 +101,7 @@ export async function PUT(
         description: body.description,
         image: body.image,
         notes: body.notes,
-        category: body.assetType, // Map assetType to category
+        category: body.assetType, // map assetType to category
         quantity: body.status === "Available" ? 1 : 0,
       },
       { new: true, runValidators: true }
@@ -139,6 +147,7 @@ export async function PUT(
   }
 }
 
+// 🧩 Delete product by ID
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
@@ -147,7 +156,10 @@ export async function DELETE(
     await connectDB();
 
     if (!mongoose.Types.ObjectId.isValid(params.id)) {
-      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid product ID" },
+        { status: 400 }
+      );
     }
 
     const deletedProduct = await Product.findByIdAndDelete(params.id);

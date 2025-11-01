@@ -36,7 +36,9 @@ const productSchema = z.object({
   // Asset Information
   name: z.string().min(3, "Asset name must be at least 3 characters"),
   assetType: z.string().min(1, "Asset type is required"),
-  serialNumber: z.string().min(3, "Serial number must be at least 3 characters"),
+  serialNumber: z
+    .string()
+    .min(3, "Serial number must be at least 3 characters"),
   brand: z.string().min(1, "Brand is required"),
   productModel: z.string().min(1, "Model is required"),
   sku: z.string().min(3, "SKU/Asset tag must be at least 3 characters"),
@@ -161,7 +163,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           updateProductAsync({
             ...product,
             ...formData,
-          }),
+          })
         ).unwrap();
         toast.success("Asset updated successfully");
       } else {
@@ -175,18 +177,20 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         router.push("/products");
       }
     } catch (err) {
-      toast.error(
-        product ? "Failed to update asset" : "Failed to add asset"
-      );
+      toast.error(product ? "Failed to update asset" : "Failed to add asset");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}   className="space-y-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
->
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
+    >
       {/* Asset Information */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Asset Information</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">
+          Asset Information
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -206,7 +210,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="assetType">Asset Type *</Label>
             <Select
               value={assetTypeValue}
-              onValueChange={(value:any) => setValue("assetType", value)}
+              onValueChange={(value: any) => setValue("assetType", value)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="assetType">
@@ -231,7 +235,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="brand">Brand *</Label>
             <Select
               value={brandValue}
-              onValueChange={(value:any) => setValue("brand", value)}
+              onValueChange={(value: any) => setValue("brand", value)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="brand">
@@ -259,7 +263,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               disabled={isSubmitting}
             />
             {errors.productModel && (
-              <p className="text-sm text-red-600">{errors.productModel.message}</p>
+              <p className="text-sm text-red-600">
+                {errors.productModel.message}
+              </p>
             )}
           </div>
         </div>
@@ -275,7 +281,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               className="font-mono"
             />
             {errors.serialNumber && (
-              <p className="text-sm text-red-600">{errors.serialNumber.message}</p>
+              <p className="text-sm text-red-600">
+                {errors.serialNumber.message}
+              </p>
             )}
           </div>
 
@@ -297,14 +305,16 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
       {/* Status & Condition */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Status & Condition</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">
+          Status & Condition
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="status">Status *</Label>
             <Select
               value={statusValue}
-              onValueChange={(value:any) => setValue("status", value as any)}
+              onValueChange={(value: any) => setValue("status", value as any)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="status">
@@ -327,7 +337,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="condition">Condition *</Label>
             <Select
               value={conditionValue}
-              onValueChange={(value:any) => setValue("condition", value as any)}
+              onValueChange={(value: any) =>
+                setValue("condition", value as any)
+              }
               disabled={isSubmitting}
             >
               <SelectTrigger id="condition">
@@ -350,7 +362,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
       {/* Employee Assignment */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Employee Assignment (Optional)</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">
+          Employee Assignment (Optional)
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -385,7 +399,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               disabled={isSubmitting}
             />
             {errors.employeeEmail && (
-              <p className="text-sm text-red-600">{errors.employeeEmail.message}</p>
+              <p className="text-sm text-red-600">
+                {errors.employeeEmail.message}
+              </p>
             )}
           </div>
 
@@ -393,7 +409,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             <Label htmlFor="department">Department</Label>
             <Select
               value={departmentValue}
-              onValueChange={(value:any) => setValue("department", value)}
+              onValueChange={(value: any) => setValue("department", value)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="department">
@@ -423,7 +439,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
       {/* Dates & Warranty */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Dates & Warranty</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">
+          Dates & Warranty
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -450,7 +468,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
       {/* Location & Value */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Location & Value</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">
+          Location & Value
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -482,7 +502,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
       {/* Additional Information */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2">Additional Information</h3>
+        <h3 className="text-lg font-semibold border-b pb-2">
+          Additional Information
+        </h3>
 
         <div className="space-y-2">
           <Label htmlFor="description">Description *</Label>
