@@ -1,2 +1,2 @@
 # assets_management
-#npx ts-node scripts/seedProducts.ts
+#npx ts-node src/scripts/seedProducts.ts
