@@ -1,8 +1,3 @@
-# assets_management
-#npx ts-node src/scripts/seedProducts.ts
-
-
-
 MONGODB_URI=mongodb+srv://admi:admin@cluster0.rssfomu.mongodb.net/inventory_system
 
 JWT_SECRET=a27c1e6f3e62990c12c894b58ea83b707b6491f93897367b4233f7c33b5a6f744b57607b324dd57172756e994fb15540be5c050fe08becb603b1c06e16b0b028
