@@ -72,47 +72,6 @@ export default function Home() {
       setTheme("light");
     }
   };
-
-  const handlePayment = async (plan: any) => {
-    try {
-      const res = await fetch("/api/razorpay/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: plan.price }),
-      });
-
-      const data = await res.json();
-
-      if (!data.order) throw new Error("Order creation failed");
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: data.order.amount,
-        currency: "INR",
-        name: "Inventory Management System",
-        description: `${plan.name} Plan Purchase`,
-        order_id: data.order.id,
-        handler: function (response: any) {
-          alert("Payment Successful 🎉");
-          console.log("Razorpay response:", response);
-        },
-        prefill: {
-          name: "John Doe",
-          email: "john@example.com",
-        },
-        theme: {
-          color: theme === "dark" ? "#0f172a" : "#2563eb",
-        },
-      };
-
-      const razorpay = new (window as any).Razorpay(options);
-      razorpay.open();
-    } catch (error) {
-      console.error(error);
-      alert("Payment failed. Please try again.");
-    }
-  };
-
   useEffect(() => {
     setPlans([
       {
