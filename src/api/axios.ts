@@ -99,7 +99,6 @@ api.interceptors.response.use(
     } else if (error.code === "ECONNABORTED") {
       toast.error("Request timeout. Please check your connection.");
     } else if (error.response?.status === 400) {
-      // Don't show toast for validation errors, let the component handle them
       console.log("Validation error:", error.response.data);
     }
 
