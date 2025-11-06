@@ -1,10 +1,13 @@
 // app/api/auth/profile/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers"; // ✅ Import from next/headers
+import { cookies } from "next/headers";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { verifyAccessToken } from "@/lib/auth/utils";
 import { z } from "zod";
+
+// 🔥 ADD THIS LINE - Force dynamic rendering
+export const dynamic = "force-dynamic";
 
 // Zod schema for profile update validation
 const profileUpdateSchema = z
@@ -35,7 +38,7 @@ export async function GET(req: NextRequest) {
   try {
     console.log("🔍 GET User Profile API called");
 
-    // ✅ FIXED: Use cookies() from next/headers instead of req.cookies
+    // ✅ Using cookies() from next/headers (requires dynamic)
     const cookieStore = cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -151,7 +154,7 @@ export async function PUT(req: NextRequest) {
   try {
     console.log("🔄 UPDATE User Profile API called");
 
-    // ✅ FIXED: Use cookies() from next/headers
+    // ✅ Using cookies() from next/headers (requires dynamic)
     const cookieStore = cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
     console.log("🍪 Access Token from cookies:", !!accessToken);

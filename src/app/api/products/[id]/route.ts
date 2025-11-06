@@ -7,6 +7,9 @@ import mongoose from "mongoose";
 const productCache = new Map();
 const PRODUCT_CACHE_TTL = 30000; // 30 seconds
 
+// Optional: Add force-dynamic if you want to be explicit
+// export const dynamic = 'force-dynamic'
+
 // 🧩 GET Single Product by ID
 export async function GET(
   req: Request,
